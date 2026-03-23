@@ -1,13 +1,938 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+<html lang="ar" dir="rtl" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تحليلي الذكي</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&amp;display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Tajawal', sans-serif; box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; overflow: hidden; }
 
+    .glass-card {
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 20px;
+    }
+    .glass-card-solid {
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(80,50,120,0.08);
+    }
+    .gold-gradient {
+      background: linear-gradient(135deg, #f6d365 0%, #fda085 50%, #f6d365 100%);
+    }
+    .purple-gradient {
+      background: linear-gradient(135deg, #2d1b69 0%, #4a2d8a 30%, #6b3fa0 60%, #2d1b69 100%);
+    }
+    .btn-gold {
+      background: linear-gradient(135deg, #f6d365, #fda085);
+      color: #2d1b69;
+      font-weight: 700;
+      border: none;
+      border-radius: 16px;
+      padding: 14px 28px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(246,211,101,0.4);
+    }
+    .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(246,211,101,0.6); }
+    .btn-gold:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .nav-item { transition: all 0.3s; cursor: pointer; }
+    .nav-item.active .nav-icon { color: #f6d365; }
+    .nav-item.active .nav-label { color: #f6d365; }
+    .nav-item .nav-icon { color: rgba(255,255,255,0.5); }
+    .nav-item .nav-label { color: rgba(255,255,255,0.5); font-size: 10px; }
+
+    .stat-card {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+      padding: 16px;
+      transition: all 0.3s;
+    }
+    .stat-card:hover { background: rgba(255,255,255,0.15); transform: translateY(-2px); }
+
+    .gauge-ring {
+      transition: stroke-dashoffset 1s ease-out;
+    }
+
+    input[type="text"], input[type="password"], input[type="number"] {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 14px;
+      padding: 12px 16px;
+      color: #fff;
+      font-family: 'Tajawal', sans-serif;
+      font-size: 14px;
+      width: 100%;
+      transition: all 0.3s;
+      outline: none;
+    }
+    input:focus {
+      border-color: #f6d365;
+      box-shadow: 0 0 0 3px rgba(246,211,101,0.15);
+    }
+    input::placeholder { color: rgba(255,255,255,0.35); }
+
+    .form-input-light {
+      background: rgba(45,27,105,0.06) !important;
+      border: 1px solid rgba(45,27,105,0.12) !important;
+      color: #2d1b69 !important;
+    }
+    .form-input-light::placeholder { color: rgba(45,27,105,0.4) !important; }
+    .form-input-light:focus {
+      border-color: #f6d365 !important;
+      box-shadow: 0 0 0 3px rgba(246,211,101,0.2) !important;
+    }
+
+    .achievement-badge {
+      background: linear-gradient(135deg, rgba(246,211,101,0.15), rgba(253,160,133,0.15));
+      border: 1px solid rgba(246,211,101,0.3);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .notification-item {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 8px;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse-gold {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(246,211,101,0.4); }
+      50% { box-shadow: 0 0 0 10px rgba(246,211,101,0); }
+    }
+    .animate-in { animation: fadeInUp 0.5s ease-out forwards; }
+    .pulse-gold { animation: pulse-gold 2s infinite; }
+
+    .screen { display: none; height: 100%; }
+    .screen.active { display: flex; flex-direction: column; }
+
+    .scrollable { overflow-y: auto; -webkit-overflow-scrolling: touch; flex: 1; }
+    .scrollable::-webkit-scrollbar { width: 4px; }
+    .scrollable::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+
+    .student-row {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .student-row:hover { background: rgba(255,255,255,0.12); }
+
+    .toast-msg {
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      padding: 12px 24px; border-radius: 14px; z-index: 9999;
+      font-weight: 600; font-size: 14px;
+      animation: fadeInUp 0.3s ease-out;
+      backdrop-filter: blur(10px);
+    }
+    .toast-success { background: rgba(16,185,129,0.9); color: #fff; }
+    .toast-error { background: rgba(239,68,68,0.9); color: #fff; }
+
+    .confirm-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9998; backdrop-filter: blur(4px);
+    }
+    .confirm-box {
+      background: #2d1b69; border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 20px; padding: 28px; max-width: 320px; width: 90%;
+      text-align: center;
+    }
+
+    .chart-bar {
+      transition: height 0.8s ease-out;
+      border-radius: 8px 8px 0 0;
+    }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body class="h-full">
+  <div id="app" class="h-full w-full flex flex-col purple-gradient" style="max-width: 480px; margin: 0 auto; position: relative; overflow: hidden;"><!-- LOGIN SCREEN -->
+   <div id="screen-login" class="screen active" style="justify-content: center; align-items: center; padding: 32px;">
+    <div style="text-align: center; width: 100%; max-width: 340px;"><!-- Logo -->
+     <div style="width: 90px; height: 90px; margin: 0 auto 20px; border-radius: 24px; display: flex; align-items: center; justify-content: center;" class="gold-gradient pulse-gold">
+      <svg width="48" height="48" viewbox="0 0 48 48" fill="none">
+       <path d="M24 4L6 14v20l18 10 18-10V14L24 4z" fill="#2d1b69" opacity="0.9" /><path d="M24 8l-14 8v16l14 8 14-8V16L24 8z" fill="none" stroke="#fff" stroke-width="1.5" /><circle cx="24" cy="24" r="6" fill="#f6d365" /><path d="M24 18v12M18 24h12" stroke="#2d1b69" stroke-width="2" stroke-linecap="round" />
+      </svg>
+     </div>
+     <h1 id="login-title" style="font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 4px;">تحليلي الذكي</h1>
+     <p id="login-school" style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 32px;">مجمع السحن</p>
+     <form id="login-form" onsubmit="handleLogin(event)">
+      <div style="margin-bottom: 14px; text-align: right;"><label style="color: rgba(255,255,255,0.6); font-size: 12px; margin-bottom: 6px; display: block;">اسم المستخدم</label> <input type="text" id="login-user" placeholder="أدخل اسم المستخدم" required>
+      </div>
+      <div style="margin-bottom: 24px; text-align: right;"><label style="color: rgba(255,255,255,0.6); font-size: 12px; margin-bottom: 6px; display: block;">كلمة المرور</label> <input type="text" id="login-pass" placeholder="أدخل كلمة المرور" required style="-webkit-text-security: disc; text-security: disc;">
+      </div><button type="submit" class="btn-gold" style="width: 100%; font-size: 16px;">دخول</button>
+     </form>
+     <div style="margin-top: 24px; color: rgba(255,255,255,0.3); font-size: 11px;"><span id="login-director">المديرة: هله النفيعي</span> · <span id="login-teacher">المعلمة: نوره المالكي</span>
+     </div>
+    </div>
+   </div><!-- MAIN APP (after login) -->
+   <div id="screen-app" class="screen" style="height: 100%;"><!-- Header -->
+    <header style="padding: 16px 20px 12px; flex-shrink: 0;">
+     <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+       <h2 id="header-title" style="color: #fff; font-size: 20px; font-weight: 800; margin: 0;">تحليلي الذكي</h2>
+       <p id="header-school" style="color: rgba(255,255,255,0.5); font-size: 12px; margin: 2px 0 0;">مجمع السحن</p>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: center;"><button onclick="showNotifications()" style="background: rgba(255,255,255,0.1); border: none; border-radius: 12px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative;"> <i data-lucide="bell" style="width: 20px; height: 20px; color: #f6d365;"></i> <span id="notif-badge" style="position: absolute; top: -2px; right: -2px; background: #ef4444; color: #fff; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-weight: 700;">0</span> </button>
+      </div>
+     </div>
+    </header><!-- Page Content -->
+    <div class="scrollable" style="padding: 0 16px 16px;"><!-- HOME PAGE -->
+     <div id="page-home" class="page-content"><!-- Stats Cards -->
+      <div id="stats-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+       <div class="stat-card animate-in" style="animation-delay: 0.1s;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+         <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(246,211,101,0.2); display: flex; align-items: center; justify-content: center;"><i data-lucide="users" style="width: 16px; height: 16px; color: #f6d365;"></i>
+         </div><span style="color: rgba(255,255,255,0.5); font-size: 11px;">عدد الطالبات</span>
+        </div>
+        <div id="stat-count" style="color: #fff; font-size: 28px; font-weight: 800;">
+         0
+        </div>
+       </div>
+       <div class="stat-card animate-in" style="animation-delay: 0.2s;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+         <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(16,185,129,0.2); display: flex; align-items: center; justify-content: center;"><i data-lucide="trending-up" style="width: 16px; height: 16px; color: #10b981;"></i>
+         </div><span style="color: rgba(255,255,255,0.5); font-size: 11px;">متوسط الصف</span>
+        </div>
+        <div id="stat-avg" style="color: #fff; font-size: 28px; font-weight: 800;">
+         -
+        </div>
+       </div>
+       <div class="stat-card animate-in" style="animation-delay: 0.3s;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+         <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(99,102,241,0.2); display: flex; align-items: center; justify-content: center;"><i data-lucide="award" style="width: 16px; height: 16px; color: #818cf8;"></i>
+         </div><span style="color: rgba(255,255,255,0.5); font-size: 11px;">أعلى أداء</span>
+        </div>
+        <div id="stat-best" style="color: #fff; font-size: 14px; font-weight: 700; word-break: break-word;">
+         -
+        </div>
+       </div>
+       <div class="stat-card animate-in" style="animation-delay: 0.4s;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+         <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(239,68,68,0.2); display: flex; align-items: center; justify-content: center;"><i data-lucide="alert-triangle" style="width: 16px; height: 16px; color: #ef4444;"></i>
+         </div><span style="color: rgba(255,255,255,0.5); font-size: 11px;">أقل أداء</span>
+        </div>
+        <div id="stat-worst" style="color: #fff; font-size: 14px; font-weight: 700; word-break: break-word;">
+         -
+        </div>
+       </div>
+      </div><!-- Intelligence Gauge -->
+      <div class="stat-card animate-in" style="animation-delay: 0.5s; margin-bottom: 16px; text-align: center; padding: 24px;">
+       <h3 style="color: #f6d365; font-size: 16px; font-weight: 700; margin-bottom: 16px;">🧠 مؤشر الذكاء التعليمي</h3>
+       <div style="position: relative; width: 160px; height: 100px; margin: 0 auto;">
+        <svg viewbox="0 0 160 100" style="width: 100%; height: 100%;"><path d="M20 90 A60 60 0 0 1 140 90" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="12" stroke-linecap="round" /> <path id="gauge-arc" d="M20 90 A60 60 0 0 1 140 90" fill="none" stroke="#f6d365" stroke-width="12" stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="188.5" class="gauge-ring" />
+        </svg>
+        <div style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); text-align: center;">
+         <div id="gauge-value" style="color: #fff; font-size: 28px; font-weight: 900;">
+          -
+         </div>
+         <div id="gauge-label" style="font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.5);">
+          لا توجد بيانات
+         </div>
+        </div>
+       </div>
+      </div><!-- Prediction Card -->
+      <div class="stat-card animate-in" style="animation-delay: 0.6s; margin-bottom: 16px;">
+       <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;"><span style="font-size: 22px;">🔮</span>
+        <h3 style="color: #f6d365; font-size: 16px; font-weight: 700; margin: 0;">التنبؤ المستقبلي</h3>
+       </div>
+       <div id="prediction-content" style="color: rgba(255,255,255,0.6); font-size: 13px;">
+        أضف بيانات الطالبات للحصول على تنبؤات الأداء
+       </div>
+      </div><!-- Perfect Score -->
+      <div id="perfect-score-card" class="stat-card animate-in" style="animation-delay: 0.7s; margin-bottom: 16px; display: none;">
+       <div style="text-align: center; padding: 8px;">
+        <div style="font-size: 40px; margin-bottom: 8px;">
+         🎯⭐
+        </div>
+        <h3 style="color: #f6d365; font-size: 18px; font-weight: 800;">درجة كاملة 100%</h3>
+        <p id="perfect-score-names" style="color: rgba(255,255,255,0.7); font-size: 13px; margin-top: 6px;"></p>
+       </div>
+      </div>
+     </div><!-- ADD PAGE -->
+     <div id="page-add" class="page-content" style="display: none;">
+      <div class="glass-card-solid" style="padding: 24px;">
+       <h3 style="color: #2d1b69; font-size: 18px; font-weight: 800; margin-bottom: 20px; text-align: center;">➕ إضافة بيانات طالبة</h3>
+       <form id="add-form" onsubmit="handleAddStudent(event)">
+        <div style="margin-bottom: 12px;"><label style="color: #2d1b69; font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">✏️ اسم الطالبة</label> <input type="text" id="f-name" class="form-input-light" placeholder="اسم الطالبة" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+         <div><label style="color: #2d1b69; font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">📘 المادة</label> <input type="text" id="f-subject" class="form-input-light" placeholder="المادة" required>
+         </div>
+         <div><label style="color: #2d1b69; font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">🏫 الصف</label> <input type="text" id="f-grade" class="form-input-light" placeholder="الصف" required>
+         </div>
+        </div>
+        <h4 style="color: #2d1b69; font-size: 14px; font-weight: 700; margin: 16px 0 10px;">📚 درجات الاختبارات</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px;">
+         <div>
+          <label style="color: #6b3fa0; font-size: 11px;">اختبار 1</label><input type="number" id="f-t1" class="form-input-light" placeholder="أدخل الدرجة">
+         </div>
+         <div>
+          <label style="color: #6b3fa0; font-size: 11px;">اختبار 2</label><input type="number" id="f-t2" class="form-input-light" placeholder="أدخل الدرجة">
+         </div>
+         <div>
+          <label style="color: #6b3fa0; font-size: 11px;">اختبار 3</label><input type="number" id="f-t3" class="form-input-light" placeholder="أدخل الدرجة">
+         </div>
+         <div>
+          <label style="color: #6b3fa0; font-size: 11px;">اختبار 4</label><input type="number" id="f-t4" class="form-input-light" placeholder="أدخل الدرجة">
+         </div>
+         <div>
+          <label style="color: #6b3fa0; font-size: 11px;">اختبار 5</label><input type="number" id="f-t5" class="form-input-light" placeholder="أدخل الدرجة">
+         </div>
+         <div>
+          <label style="color: #6b3fa0; font-size: 11px;">اختبار 6</label><input type="number" id="f-t6" class="form-input-light" placeholder="أدخل الدرجة">
+         </div>
+         <div>
+          <label style="color: #6b3fa0; font-size: 11px;">اختبار 7</label><input type="number" id="f-t7" class="form-input-light" placeholder="أدخل الدرجة">
+         </div>
+         <div>
+          <label style="color: #6b3fa0; font-size: 11px;">اختبار 8</label><input type="number" id="f-t8" class="form-input-light" placeholder="أدخل الدرجة">
+         </div>
+         <div>
+          <label style="color: #6b3fa0; font-size: 11px;">اختبار 9</label><input type="number" id="f-t9" class="form-input-light" placeholder="أدخل الدرجة">
+         </div>
+         <div>
+          <label style="color: #6b3fa0; font-size: 11px;">اختبار 10</label><input type="number" id="f-t10" class="form-input-light" placeholder="أدخل الدرجة">
+         </div>
+        </div><button type="submit" id="add-btn" class="btn-gold" style="width: 100%; font-size: 15px;">🎯 حفظ وتحليل</button>
+        <div id="add-loading" style="display: none; text-align: center; color: #6b3fa0; margin-top: 12px; font-size: 13px;">
+         ⏳ جاري الحفظ...
+        </div>
+       </form>
+      </div>
+     </div><!-- ANALYSIS PAGE -->
+     <div id="page-analysis" class="page-content" style="display: none;">
+      <div id="analysis-empty" style="text-align: center; padding: 40px 20px; color: rgba(255,255,255,0.5);">
+       <div style="font-size: 48px; margin-bottom: 12px;">
+        📊
+       </div>
+       <p>اختر طالبة من قائمة الطالبات لعرض التحليل</p>
+      </div>
+      <div id="analysis-detail" style="display: none;"></div>
+     </div><!-- STUDENTS PAGE -->
+     <div id="page-students" class="page-content" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+       <h3 style="color: #fff; font-size: 18px; font-weight: 800;">👩‍🎓 الطالبات</h3><span id="student-total" style="color: rgba(255,255,255,0.4); font-size: 12px;">0 طالبة</span>
+      </div>
+      <div id="students-list"></div>
+      <div id="students-empty" style="text-align: center; padding: 40px 20px; color: rgba(255,255,255,0.5);">
+       <div style="font-size: 48px; margin-bottom: 12px;">
+        👩‍🎓
+       </div>
+       <p>لا توجد طالبات بعد. أضيفي طالبة جديدة!</p>
+      </div>
+     </div><!-- SETTINGS PAGE -->
+     <div id="page-settings" class="page-content" style="display: none;">
+      <h3 style="color: #fff; font-size: 18px; font-weight: 800; margin-bottom: 16px;">⚙️ الإعدادات</h3>
+      <div class="stat-card" style="margin-bottom: 12px;">
+       <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center;" class="gold-gradient"><i data-lucide="user" style="width: 22px; height: 22px; color: #2d1b69;"></i>
+        </div>
+        <div>
+         <div id="settings-director" style="color: #fff; font-size: 14px; font-weight: 700;">
+          المديرة: هله النفيعي
+         </div>
+         <div id="settings-teacher" style="color: rgba(255,255,255,0.5); font-size: 12px;">
+          المعلمة: نوره المالكي
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="stat-card" style="margin-bottom: 12px;">
+       <div style="color: rgba(255,255,255,0.5); font-size: 12px; margin-bottom: 4px;">
+        المجمع
+       </div>
+       <div id="settings-school" style="color: #fff; font-size: 15px; font-weight: 700;">
+        مجمع السحن
+       </div>
+      </div><!-- Achievements -->
+      <h3 style="color: #f6d365; font-size: 16px; font-weight: 700; margin: 20px 0 12px;">🏆 الإنجازات</h3>
+      <div id="achievements-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+       <div class="achievement-badge" style="text-align: center; opacity: 0.4;">
+        <div style="font-size: 28px; margin-bottom: 6px;">
+         ⭐
+        </div>
+        <div style="color: #f6d365; font-size: 11px; font-weight: 600;">
+         أول درجة كاملة
+        </div>
+       </div>
+       <div class="achievement-badge" style="text-align: center; opacity: 0.4;">
+        <div style="font-size: 28px; margin-bottom: 6px;">
+         🚀
+        </div>
+        <div style="color: #f6d365; font-size: 11px; font-weight: 600;">
+         أسرع تحسن
+        </div>
+       </div>
+       <div class="achievement-badge" style="text-align: center; opacity: 0.4;">
+        <div style="font-size: 28px; margin-bottom: 6px;">
+         🧠
+        </div>
+        <div style="color: #f6d365; font-size: 11px; font-weight: 600;">
+         طالبة متفوقة
+        </div>
+       </div>
+       <div class="achievement-badge" style="text-align: center; opacity: 0.4;">
+        <div style="font-size: 28px; margin-bottom: 6px;">
+         🔥
+        </div>
+        <div style="color: #f6d365; font-size: 11px; font-weight: 600;">
+         أداء مستمر
+        </div>
+       </div>
+      </div><button onclick="handleLogout()" class="btn-gold" style="width: 100%; margin-top: 24px; font-size: 15px; background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff;">تسجيل خروج</button>
+     </div><!-- NOTIFICATIONS PAGE -->
+     <div id="page-notifications" class="page-content" style="display: none;">
+      <h3 style="color: #fff; font-size: 18px; font-weight: 800; margin-bottom: 16px;">🔔 الإشعارات</h3>
+      <div id="notifications-list"></div>
+      <div id="notif-empty" style="text-align: center; padding: 40px 20px; color: rgba(255,255,255,0.5);">
+       <div style="font-size: 48px; margin-bottom: 12px;">
+        🔔
+       </div>
+       <p>لا توجد إشعارات</p>
+      </div>
+     </div>
+    </div><!-- Bottom Nav -->
+    <nav style="flex-shrink: 0; background: rgba(20,10,50,0.95); border-top: 1px solid rgba(255,255,255,0.08); padding: 8px 0 12px; backdrop-filter: blur(10px);">
+     <div style="display: flex; justify-content: space-around; align-items: center;">
+      <div class="nav-item active" onclick="navigateTo('home')" data-nav="home">
+       <div style="text-align: center;"><i data-lucide="home" class="nav-icon" style="width: 22px; height: 22px; margin: 0 auto; display: block;"></i> <span class="nav-label">الرئيسية</span>
+       </div>
+      </div>
+      <div class="nav-item" onclick="navigateTo('add')" data-nav="add">
+       <div style="text-align: center;">
+        <div style="width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: -16px auto 0;" class="gold-gradient"><i data-lucide="plus" style="width: 24px; height: 24px; color: #2d1b69;"></i>
+        </div><span class="nav-label">إضافة</span>
+       </div>
+      </div>
+      <div class="nav-item" onclick="navigateTo('analysis')" data-nav="analysis">
+       <div style="text-align: center;"><i data-lucide="bar-chart-3" class="nav-icon" style="width: 22px; height: 22px; margin: 0 auto; display: block;"></i> <span class="nav-label">التحليل</span>
+       </div>
+      </div>
+      <div class="nav-item" onclick="navigateTo('students')" data-nav="students">
+       <div style="text-align: center;"><i data-lucide="graduation-cap" class="nav-icon" style="width: 22px; height: 22px; margin: 0 auto; display: block;"></i> <span class="nav-label">الطالبات</span>
+       </div>
+      </div>
+      <div class="nav-item" onclick="navigateTo('settings')" data-nav="settings">
+       <div style="text-align: center;"><i data-lucide="settings" class="nav-icon" style="width: 22px; height: 22px; margin: 0 auto; display: block;"></i> <span class="nav-label">الإعدادات</span>
+       </div>
+      </div>
+     </div>
+    </nav>
+   </div><!-- Confirm dialog container -->
+   <div id="confirm-container"></div>
+  </div>
+  <script>
+  // ===== STATE =====
+  let allStudents = [];
+  let notifications = [];
+  let currentPage = 'home';
+  let selectedStudentId = null;
+
+  const defaultConfig = {
+    app_title: 'تحليلي الذكي',
+    school_name: 'مجمع السحن',
+    director_name: 'هله النفيعي',
+    teacher_name: 'نوره المالكي',
+    background_color: '#2d1b69',
+    surface_color: 'rgba(255,255,255,0.12)',
+    text_color: '#ffffff',
+    primary_action_color: '#f6d365',
+    secondary_action_color: '#6b3fa0',
+    font_family: 'Tajawal',
+    font_size: 14
+  };
+
+  // ===== ELEMENT SDK =====
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange: async (config) => {
+      const title = config.app_title || defaultConfig.app_title;
+      const school = config.school_name || defaultConfig.school_name;
+      const director = config.director_name || defaultConfig.director_name;
+      const teacher = config.teacher_name || defaultConfig.teacher_name;
+      const font = config.font_family || defaultConfig.font_family;
+      const fontSize = config.font_size || defaultConfig.font_size;
+      const bgColor = config.background_color || defaultConfig.background_color;
+      const textColor = config.text_color || defaultConfig.text_color;
+      const primaryColor = config.primary_action_color || defaultConfig.primary_action_color;
+
+      // Update text
+      const el = (id) => document.getElementById(id);
+      if (el('login-title')) el('login-title').textContent = title;
+      if (el('login-school')) el('login-school').textContent = school;
+      if (el('login-director')) el('login-director').textContent = 'المديرة: ' + director;
+      if (el('login-teacher')) el('login-teacher').textContent = 'المعلمة: ' + teacher;
+      if (el('header-title')) el('header-title').textContent = title;
+      if (el('header-school')) el('header-school').textContent = school;
+      if (el('settings-director')) el('settings-director').textContent = 'المديرة: ' + director;
+      if (el('settings-teacher')) el('settings-teacher').textContent = 'المعلمة: ' + teacher;
+      if (el('settings-school')) el('settings-school').textContent = school;
+
+      // Update colors
+      const app = document.getElementById('app');
+      if (app) app.style.background = `linear-gradient(135deg, ${bgColor} 0%, ${adjustColor(bgColor, 30)} 60%, ${bgColor} 100%)`;
+
+      // Font
+      document.body.style.fontFamily = `${font}, Tajawal, sans-serif`;
+
+      // Font size
+      document.body.style.fontSize = fontSize + 'px';
+    },
+    mapToCapabilities: (config) => ({
+      recolorables: [
+        { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+        { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+        { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+        { get: () => config.primary_action_color || defaultConfig.primary_action_color, set: (v) => { config.primary_action_color = v; window.elementSdk.setConfig({ primary_action_color: v }); } },
+        { get: () => config.secondary_action_color || defaultConfig.secondary_action_color, set: (v) => { config.secondary_action_color = v; window.elementSdk.setConfig({ secondary_action_color: v }); } }
+      ],
+      borderables: [],
+      fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+      fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
+    }),
+    mapToEditPanelValues: (config) => new Map([
+      ['app_title', config.app_title || defaultConfig.app_title],
+      ['school_name', config.school_name || defaultConfig.school_name],
+      ['director_name', config.director_name || defaultConfig.director_name],
+      ['teacher_name', config.teacher_name || defaultConfig.teacher_name]
+    ])
+  });
+
+  function adjustColor(hex, amount) {
+    if (!hex || hex.startsWith('rgba')) return hex;
+    let c = hex.replace('#', '');
+    if (c.length === 3) c = c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
+    const num = parseInt(c, 16);
+    let r = Math.min(255, ((num >> 16) & 0xff) + amount);
+    let g = Math.min(255, ((num >> 8) & 0xff) + amount);
+    let b = Math.min(255, (num & 0xff) + amount);
+    return `#${((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1)}`;
+  }
+
+  // ===== DATA SDK =====
+  const dataHandler = {
+    onDataChanged(data) {
+      allStudents = data;
+      updateDashboard();
+      renderStudentsList();
+      updateNotifications();
+      updateAchievements();
+      if (selectedStudentId) {
+        const s = allStudents.find(x => x.__backendId === selectedStudentId);
+        if (s) renderAnalysisDetail(s);
+      }
+    }
+  };
+
+  (async () => {
+    const res = await window.dataSdk.init(dataHandler);
+    if (!res.isOk) console.error('Data SDK init failed');
+  })();
+
+  // ===== NAVIGATION =====
+  function navigateTo(page) {
+    currentPage = page;
+    document.querySelectorAll('.page-content').forEach(p => p.style.display = 'none');
+    const target = document.getElementById('page-' + page);
+    if (target) target.style.display = 'block';
+
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const navItem = document.querySelector(`[data-nav="${page}"]`);
+    if (navItem) navItem.classList.add('active');
+    lucide.createIcons();
+  }
+
+  function showNotifications() {
+    navigateTo('notifications');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  }
+
+  // ===== LOGIN =====
+  function handleLogin(e) {
+    e.preventDefault();
+    const user = document.getElementById('login-user').value.trim();
+    const pass = document.getElementById('login-pass').value.trim();
+    if (user && pass) {
+      document.getElementById('screen-login').classList.remove('active');
+      document.getElementById('screen-app').classList.add('active');
+      lucide.createIcons();
+    }
+  }
+
+  function handleLogout() {
+    document.getElementById('screen-app').classList.remove('active');
+    document.getElementById('screen-login').classList.add('active');
+    document.getElementById('login-user').value = '';
+    document.getElementById('login-pass').value = '';
+    navigateTo('home');
+  }
+
+  // ===== ADD STUDENT =====
+  async function handleAddStudent(e) {
+    e.preventDefault();
+    if (allStudents.length >= 999) {
+      showToast('تم الوصول للحد الأقصى (999 سجل)', 'error');
+      return;
+    }
+    const btn = document.getElementById('add-btn');
+    const loading = document.getElementById('add-loading');
+    btn.disabled = true;
+    loading.style.display = 'block';
+
+    const tests = [];
+    for (let i = 1; i <= 10; i++) {
+      const v = parseFloat(document.getElementById('f-t' + i).value) || 0;
+      tests.push(Math.min(100, Math.max(0, v)));
+    }
+    const filledTests = tests.filter(t => t > 0);
+    const avg = filledTests.length > 0 ? Math.round((filledTests.reduce((a,b) => a+b, 0) / filledTests.length) * 10) / 10 : 0;
+
+    const record = {
+      student_name: document.getElementById('f-name').value.trim(),
+      subject: document.getElementById('f-subject').value.trim(),
+      grade_level: document.getElementById('f-grade').value.trim(),
+      test1: tests[0], test2: tests[1], test3: tests[2], test4: tests[3], test5: tests[4],
+      test6: tests[5], test7: tests[6], test8: tests[7], test9: tests[8], test10: tests[9],
+      average: avg,
+      created_at: new Date().toISOString()
+    };
+
+    const result = await window.dataSdk.create(record);
+    btn.disabled = false;
+    loading.style.display = 'none';
+
+    if (result.isOk) {
+      showToast('✅ تم حفظ بيانات الطالبة وتحليلها بنجاح!', 'success');
+      document.getElementById('add-form').reset();
+    } else {
+      showToast('❌ حدث خطأ أثناء الحفظ', 'error');
+    }
+  }
+
+  // ===== DASHBOARD =====
+  function updateDashboard() {
+    const count = allStudents.length;
+    document.getElementById('stat-count').textContent = count;
+
+    if (count === 0) {
+      document.getElementById('stat-avg').textContent = '-';
+      document.getElementById('stat-best').textContent = '-';
+      document.getElementById('stat-worst').textContent = '-';
+      document.getElementById('gauge-value').textContent = '-';
+      document.getElementById('gauge-label').textContent = 'لا توجد بيانات';
+      document.getElementById('gauge-arc').style.strokeDashoffset = '188.5';
+      document.getElementById('prediction-content').innerHTML = 'أضف بيانات الطالبات للحصول على تنبؤات الأداء';
+      document.getElementById('perfect-score-card').style.display = 'none';
+      return;
+    }
+
+    const totalAvg = Math.round((allStudents.reduce((s, x) => s + (x.average || 0), 0) / count) * 10) / 10;
+    document.getElementById('stat-avg').textContent = totalAvg;
+
+    const sorted = [...allStudents].sort((a, b) => (b.average || 0) - (a.average || 0));
+    document.getElementById('stat-best').textContent = sorted[0].student_name + ' (' + sorted[0].average + ')';
+    document.getElementById('stat-worst').textContent = sorted[sorted.length - 1].student_name + ' (' + sorted[sorted.length - 1].average + ')';
+
+    // Gauge
+    const gaugePercent = Math.min(100, totalAvg);
+    const offset = 188.5 - (188.5 * gaugePercent / 100);
+    const arc = document.getElementById('gauge-arc');
+    arc.style.strokeDashoffset = offset;
+    if (totalAvg >= 85) { arc.style.stroke = '#10b981'; document.getElementById('gauge-label').textContent = '🟢 عالي'; }
+    else if (totalAvg >= 60) { arc.style.stroke = '#f59e0b'; document.getElementById('gauge-label').textContent = '🟡 متوسط'; }
+    else { arc.style.stroke = '#ef4444'; document.getElementById('gauge-label').textContent = '🔴 منخفض'; }
+    document.getElementById('gauge-value').textContent = totalAvg + '%';
+
+    // Prediction
+    let predHtml = '';
+    sorted.slice(0, 3).forEach(s => {
+      const tests = getTests(s);
+      const trend = analyzeTrend(tests);
+      const arrow = trend === 'up' ? '📈' : trend === 'down' ? '📉' : '➡️';
+      const label = trend === 'up' ? 'متصاعد' : trend === 'down' ? 'متراجع' : 'مستقر';
+      predHtml += `<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06);"><span style="color: #fff; font-size: 13px; font-weight: 600;">${s.student_name}</span><span style="font-size: 13px;">${arrow} ${label}</span></div>`;
+    });
+    document.getElementById('prediction-content').innerHTML = predHtml || 'لا توجد بيانات كافية';
+
+    // Perfect scores
+    const perfectStudents = allStudents.filter(s => s.average === 100);
+    if (perfectStudents.length > 0) {
+      document.getElementById('perfect-score-card').style.display = 'block';
+      document.getElementById('perfect-score-names').textContent = perfectStudents.map(s => s.student_name).join('، ');
+    } else {
+      document.getElementById('perfect-score-card').style.display = 'none';
+    }
+  }
+
+  function getTests(s) {
+    return [s.test1, s.test2, s.test3, s.test4, s.test5, s.test6, s.test7, s.test8, s.test9, s.test10].filter(t => t > 0);
+  }
+
+  function analyzeTrend(tests) {
+    if (tests.length < 2) return 'stable';
+    const half = Math.floor(tests.length / 2);
+    const first = tests.slice(0, half).reduce((a,b) => a+b, 0) / half;
+    const second = tests.slice(half).reduce((a,b) => a+b, 0) / (tests.length - half);
+    if (second > first + 3) return 'up';
+    if (second < first - 3) return 'down';
+    return 'stable';
+  }
+
+  function getGrade(avg) {
+    if (avg >= 90) return { label: 'ممتاز', color: '#10b981', emoji: '🌟' };
+    if (avg >= 80) return { label: 'جيد جدًا', color: '#3b82f6', emoji: '✨' };
+    if (avg >= 70) return { label: 'جيد', color: '#f59e0b', emoji: '👍' };
+    return { label: 'يحتاج دعم', color: '#ef4444', emoji: '💪' };
+  }
+
+  // ===== STUDENTS LIST =====
+  function renderStudentsList() {
+    const list = document.getElementById('students-list');
+    const empty = document.getElementById('students-empty');
+    document.getElementById('student-total').textContent = allStudents.length + ' طالبة';
+
+    if (allStudents.length === 0) {
+      list.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    const existingMap = new Map([...list.children].map(el => [el.dataset.sid, el]));
+    const fragment = document.createDocumentFragment();
+
+    allStudents.forEach(s => {
+      const grade = getGrade(s.average || 0);
+      if (existingMap.has(s.__backendId)) {
+        const el = existingMap.get(s.__backendId);
+        el.querySelector('.s-name').textContent = s.student_name;
+        el.querySelector('.s-subject').textContent = s.subject + ' · ' + s.grade_level;
+        el.querySelector('.s-avg').textContent = (s.average || 0) + '%';
+        el.querySelector('.s-grade').textContent = grade.emoji + ' ' + grade.label;
+        el.querySelector('.s-grade').style.color = grade.color;
+        existingMap.delete(s.__backendId);
+        fragment.appendChild(el);
+      } else {
+        const el = document.createElement('div');
+        el.className = 'student-row';
+        el.dataset.sid = s.__backendId;
+        el.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="flex: 1;">
+              <div class="s-name" style="color: #fff; font-size: 15px; font-weight: 700;">${s.student_name}</div>
+              <div class="s-subject" style="color: rgba(255,255,255,0.5); font-size: 12px;">${s.subject} · ${s.grade_level}</div>
+              <div class="s-grade" style="font-size: 12px; font-weight: 600; margin-top: 4px; color: ${grade.color};">${grade.emoji} ${grade.label}</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="s-avg" style="color: #f6d365; font-size: 22px; font-weight: 800;">${(s.average || 0)}%</div>
+              <button onclick="event.stopPropagation(); confirmDelete('${s.__backendId}')" style="background: rgba(239,68,68,0.2); border: none; border-radius: 10px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                <i data-lucide="trash-2" style="width: 16px; height: 16px; color: #ef4444;"></i>
+              </button>
+            </div>
+          </div>`;
+        el.addEventListener('click', () => { selectedStudentId = s.__backendId; renderAnalysisDetail(s); navigateTo('analysis'); });
+        fragment.appendChild(el);
+      }
+    });
+
+    existingMap.forEach(el => el.remove());
+    list.innerHTML = '';
+    list.appendChild(fragment);
+    lucide.createIcons();
+  }
+
+  // ===== ANALYSIS DETAIL =====
+  function renderAnalysisDetail(s) {
+    document.getElementById('analysis-empty').style.display = 'none';
+    const container = document.getElementById('analysis-detail');
+    container.style.display = 'block';
+
+    const tests = getTests(s);
+    const allTests = [s.test1, s.test2, s.test3, s.test4, s.test5, s.test6, s.test7, s.test8, s.test9, s.test10];
+    const grade = getGrade(s.average || 0);
+    const trend = analyzeTrend(tests);
+    const trendLabel = trend === 'up' ? '📈 أداء متصاعد' : trend === 'down' ? '📉 أداء متذبذب' : '➡️ أداء مستقر';
+    const trendColor = trend === 'up' ? '#10b981' : trend === 'down' ? '#ef4444' : '#f59e0b';
+
+    let recommendations = '';
+    if (s.average < 70) recommendations = '<div style="color: #f59e0b;">💡 مراجعة الدروس الأساسية</div><div style="color: #f59e0b;">📝 تمارين إضافية يومية</div>';
+    else if (s.average < 85) recommendations = '<div style="color: #3b82f6;">📖 مراجعة الدرس قبل الاختبار</div><div style="color: #3b82f6;">✏️ حل تمارين متنوعة</div>';
+    else recommendations = '<div style="color: #10b981;">🌟 الاستمرار على نفس المستوى</div><div style="color: #10b981;">🎯 تحديات إضافية متقدمة</div>';
+
+    // Build bar chart
+    const maxVal = 100;
+    let bars = '';
+    allTests.forEach((t, i) => {
+      const val = t || 0;
+      const h = Math.max(4, (val / maxVal) * 120);
+      const color = val >= 90 ? '#10b981' : val >= 70 ? '#f59e0b' : val > 0 ? '#ef4444' : 'rgba(255,255,255,0.1)';
+      bars += `<div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+        <span style="color: rgba(255,255,255,0.6); font-size: 10px;">${val}</span>
+        <div class="chart-bar" style="width: 22px; height: ${h}px; background: ${color};"></div>
+        <span style="color: rgba(255,255,255,0.4); font-size: 9px;">${i + 1}</span>
+      </div>`;
+    });
+
+    // Analyze strengths and weaknesses
+    const { strengths, weaknesses } = analyzeStrengthsWeaknesses(allTests);
+    let strengthsHtml = strengths.length > 0 ? strengths.map((t, i) => `<div style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span style="color: #10b981; font-weight: 700;">✅ اختبار ${t.index + 1}:</span> <span style="color: rgba(255,255,255,0.8);">${t.value}% - أداء قوي جدًا</span></div>`).join('') : '<div style="color: rgba(255,255,255,0.4); font-size: 13px;">لا توجد درجات عالية حتى الآن</div>';
+    let weaknessesHtml = weaknesses.length > 0 ? weaknesses.map((t, i) => `<div style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span style="color: #ef4444; font-weight: 700;">⚠️ اختبار ${t.index + 1}:</span> <span style="color: rgba(255,255,255,0.8);">${t.value}% - يحتاج تحسن</span></div>`).join('') : '<div style="color: rgba(255,255,255,0.4); font-size: 13px;">أداء متوازن في جميع الاختبارات</div>';
+
+    container.innerHTML = `
+      <div class="stat-card" style="margin-bottom: 12px; text-align: center;">
+        <h3 style="color: #fff; font-size: 20px; font-weight: 800; margin-bottom: 4px;">${s.student_name}</h3>
+        <p style="color: rgba(255,255,255,0.5); font-size: 13px;">${s.subject} · ${s.grade_level}</p>
+        <div style="margin: 16px 0;">
+          <div style="color: #f6d365; font-size: 42px; font-weight: 900;">${s.average}%</div>
+          <div style="color: ${grade.color}; font-size: 16px; font-weight: 700; margin-top: 4px;">${grade.emoji} ${grade.label}</div>
+        </div>
+      </div>
+      <div class="stat-card" style="margin-bottom: 12px;">
+        <h4 style="color: #f6d365; font-size: 14px; font-weight: 700; margin-bottom: 12px;">📊 درجات الاختبارات</h4>
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; height: 150px; padding-top: 10px;">${bars}</div>
+      </div>
+      <div class="stat-card" style="margin-bottom: 12px;">
+        <h4 style="color: #10b981; font-size: 14px; font-weight: 700; margin-bottom: 10px;">💪 نقاط القوة</h4>
+        <div style="font-size: 12px; line-height: 1.8;">${strengthsHtml}</div>
+      </div>
+      <div class="stat-card" style="margin-bottom: 12px;">
+        <h4 style="color: #ef4444; font-size: 14px; font-weight: 700; margin-bottom: 10px;">🎯 نقاط التحسن</h4>
+        <div style="font-size: 12px; line-height: 1.8;">${weaknessesHtml}</div>
+      </div>
+      <div class="stat-card" style="margin-bottom: 12px;">
+        <h4 style="color: #f6d365; font-size: 14px; font-weight: 700; margin-bottom: 8px;">🧠 التحليل الذكي</h4>
+        <div style="color: ${trendColor}; font-size: 16px; font-weight: 700; margin-bottom: 8px;">${trendLabel}</div>
+        <div style="font-size: 13px; line-height: 1.8;">${recommendations}</div>
+      </div>
+      <button onclick="navigateTo('students')" class="btn-gold" style="width: 100%; font-size: 14px;">← العودة للقائمة</button>
+    `;
+    lucide.createIcons();
+  }
+
+  function analyzeStrengthsWeaknesses(allTests) {
+    const testsWithIndex = allTests.map((v, i) => ({ value: v, index: i })).filter(t => t.value > 0);
+    const avg = testsWithIndex.length > 0 ? testsWithIndex.reduce((s, t) => s + t.value, 0) / testsWithIndex.length : 0;
+    
+    const strengths = testsWithIndex.filter(t => t.value >= avg + 10).sort((a, b) => b.value - a.value).slice(0, 3);
+    const weaknesses = testsWithIndex.filter(t => t.value <= avg - 10).sort((a, b) => a.value - b.value).slice(0, 3);
+    
+    return { strengths, weaknesses };
+  }
+
+  // ===== DELETE =====
+  function confirmDelete(id) {
+    const container = document.getElementById('confirm-container');
+    container.innerHTML = `
+      <div class="confirm-overlay" onclick="closeConfirm()">
+        <div class="confirm-box" onclick="event.stopPropagation()">
+          <div style="font-size: 36px; margin-bottom: 12px;">⚠️</div>
+          <h3 style="color: #fff; font-size: 16px; font-weight: 700; margin-bottom: 8px;">حذف الطالبة؟</h3>
+          <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 20px;">سيتم حذف جميع بيانات الطالبة نهائيًا</p>
+          <div style="display: flex; gap: 10px;">
+            <button onclick="closeConfirm()" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #fff; cursor: pointer; font-family: 'Tajawal'; font-weight: 600;">إلغاء</button>
+            <button onclick="doDelete('${id}')" id="del-btn-${id}" style="flex: 1; padding: 12px; border-radius: 12px; border: none; background: #ef4444; color: #fff; cursor: pointer; font-family: 'Tajawal'; font-weight: 600;">حذف</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function closeConfirm() {
+    document.getElementById('confirm-container').innerHTML = '';
+  }
+
+  async function doDelete(id) {
+    const student = allStudents.find(s => s.__backendId === id);
+    if (!student) { closeConfirm(); return; }
+    const btn = document.getElementById('del-btn-' + id);
+    if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+    const result = await window.dataSdk.delete(student);
+    closeConfirm();
+    if (result.isOk) {
+      showToast('✅ تم الحذف بنجاح', 'success');
+      if (selectedStudentId === id) { selectedStudentId = null; document.getElementById('analysis-detail').style.display = 'none'; document.getElementById('analysis-empty').style.display = 'block'; }
+    } else {
+      showToast('❌ خطأ أثناء الحذف', 'error');
+    }
+  }
+
+  // ===== NOTIFICATIONS =====
+  function updateNotifications() {
+    notifications = [];
+    allStudents.forEach(s => {
+      if (s.average >= 95) notifications.push({ type: 'success', text: `⭐ ${s.student_name} حققت أداءً ممتازًا (${s.average}%)` });
+      if (s.average < 60 && s.average > 0) notifications.push({ type: 'warning', text: `📉 ${s.student_name} تحتاج دعمًا إضافيًا (${s.average}%)` });
+      if (s.average === 100) notifications.push({ type: 'perfect', text: `🎯 ${s.student_name} حصلت على الدرجة الكاملة!` });
+      const trend = analyzeTrend(getTests(s));
+      if (trend === 'up') notifications.push({ type: 'up', text: `📈 ${s.student_name} أداؤها في تحسن مستمر` });
+    });
+
+    const badge = document.getElementById('notif-badge');
+    if (notifications.length > 0) {
+      badge.style.display = 'flex';
+      badge.textContent = Math.min(notifications.length, 99);
+    } else {
+      badge.style.display = 'none';
+    }
+
+    const list = document.getElementById('notifications-list');
+    const empty = document.getElementById('notif-empty');
+    if (notifications.length === 0) {
+      list.innerHTML = '';
+      empty.style.display = 'block';
+    } else {
+      empty.style.display = 'none';
+      list.innerHTML = notifications.map(n => `<div class="notification-item"><span style="color: rgba(255,255,255,0.9); font-size: 13px;">${n.text}</span></div>`).join('');
+    }
+  }
+
+  // ===== ACHIEVEMENTS =====
+  function updateAchievements() {
+    const badges = document.querySelectorAll('#achievements-container .achievement-badge');
+    const hasPerfect = allStudents.some(s => s.average === 100);
+    const hasFastImprove = allStudents.some(s => analyzeTrend(getTests(s)) === 'up');
+    const hasExcellent = allStudents.some(s => s.average >= 95);
+    const hasConsistent = allStudents.some(s => { const t = getTests(s); return t.length >= 5 && t.every(v => v >= 80); });
+
+    if (badges[0]) badges[0].style.opacity = hasPerfect ? '1' : '0.4';
+    if (badges[1]) badges[1].style.opacity = hasFastImprove ? '1' : '0.4';
+    if (badges[2]) badges[2].style.opacity = hasExcellent ? '1' : '0.4';
+    if (badges[3]) badges[3].style.opacity = hasConsistent ? '1' : '0.4';
+  }
+
+  // ===== TOAST =====
+  function showToast(msg, type) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-msg toast-' + type;
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  // Init icons
+  lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e104f8c9495e1d1',t:'MTc3NDI5OTA1MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
